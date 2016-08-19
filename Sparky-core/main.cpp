@@ -15,8 +15,10 @@
 #include "src/graphics/sprite.h"
 
 #include <iostream>
+#include <vector>
+#include <time.h>
 
-#define BATCH_RENDERER 1
+#define BATCH_RENDERER 0
 int main() {
 	
 	using namespace sparky;
@@ -43,18 +45,41 @@ int main() {
 #endif
 
 	mat4 ortho = mat4::orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
+	//mat4 ortho = mat4::orthographic(-1.0f, 17.0f, -1.0f, 10.0f, -1.0f, 1.0f);
 
 	Shader shader("src/shaders/basic.vert", "src/shaders/basic.frag");
 	shader.enable();
 	shader.setUniformMat4("pr_matrix", ortho);
+
+	std::vector<Renderable2D*> sprites;
+
+	srand(time(NULL));
+
+	for (float y = 0; y < 9.0f; y+= 0.05) {
+		for (float x = 0; x < 16.0f; x+=0.05) {
+			sprites.push_back(
+				new 
+#if BATCH_RENDERER
+				Sprite
+#else
+				StaticSprite
+#endif
+				(x, y, 0.04f, 0.04f, maths::vec4(rand() % 1000 / 1000.0f, 0, 1, 1)
+#if !BATCH_RENDERER
+					, shader
+#endif
+				));
+		}
+	}
 	
 #if BATCH_RENDERER
-	Sprite sprite(0, 0, 8, 9, maths::vec4(1.0f, 0.3f, 0.8f, 1.0f));
-	Sprite sprite2(8, 0, 8, 9, maths::vec4(0, 0.3f, 0.8f, 1.0f));
+	Sprite sprite(0, 0, 5, 5, maths::vec4(1.0f, 0.3f, 0.8f, 1.0f));
+	Sprite sprite2(5, 0, 5, 5, maths::vec4(0, 0.3f, 0.8f, 1.0f));
 	BatchRenderer2D renderer;
+
 #else
-	shader.setUniformMat4("ml_matrix", mat4::translation(vec3(4, 3, 0)));
 	StaticSprite sprite(0, 0, 16, 9, maths::vec4(1, 0, 1, 1), shader);
+	StaticSprite sprite2(8, 0, 8, 9, maths::vec4(0, 0.3f, 0.8f, 1.0f), shader);
 	Simple2DRenderer renderer;
 #endif
 #if 0
@@ -80,8 +105,9 @@ int main() {
 #if BATCH_RENDERER
 		renderer.begin();
 #endif
-		renderer.submit(&sprite);
-		renderer.submit(&sprite2);
+		for (int i = 0; i < sprites.size(); i++) {
+			renderer.submit(sprites[i]);
+		}
 #if BATCH_RENDERER
 		renderer.end();
 #endif
