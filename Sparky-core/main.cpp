@@ -1,14 +1,22 @@
 #include "src/graphics/window.h"
 #include "src/maths/maths.h"
 #include "src/utils/fileutils.h"
-#include "src/utils/fileutils.h"
+
 #include "src/graphics/shader.h"
 #include "src/graphics/buffers/buffer.h"
 #include "src/graphics/buffers/indexbuffer.h"
 #include "src/graphics/buffers/vertexarray.h"
+
 #include "src/graphics/renderer2d.h"
 #include "src/graphics/simple2drenderer.h"
+#include "src/graphics/batchrenderer2d.h"
+
+#include "src/graphics/static_sprite.h"
+#include "src/graphics/sprite.h"
+
 #include <iostream>
+
+#define BATCH_RENDERER 1
 int main() {
 	
 	using namespace sparky;
@@ -32,25 +40,6 @@ int main() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
-#else
-	GLfloat vertices[] = {
-		0, 0, 0,
-		0, 3, 0,
-		8, 3, 0,
-		8, 0, 0
-	};
-
-	GLushort indices[] = {
-		0, 1, 2,
-		2, 3, 0
-	};
-
-	VertexArray vao;
-	Buffer* vbo = new Buffer(vertices, 4 * 3, 3);
-	IndexBuffer ibo(indices, 6);
-
-	vao.addBuffer(vbo, 0);
-
 #endif
 
 	mat4 ortho = mat4::orthographic(0.0f, 16.0f, 0.0f, 9.0f, -1.0f, 1.0f);
@@ -58,14 +47,20 @@ int main() {
 	Shader shader("src/shaders/basic.vert", "src/shaders/basic.frag");
 	shader.enable();
 	shader.setUniformMat4("pr_matrix", ortho);
+	
+#if BATCH_RENDERER
+	Sprite sprite(0, 0, 8, 9, maths::vec4(1.0f, 0.3f, 0.8f, 1.0f));
+	Sprite sprite2(8, 0, 8, 9, maths::vec4(0, 0.3f, 0.8f, 1.0f));
+	BatchRenderer2D renderer;
+#else
 	shader.setUniformMat4("ml_matrix", mat4::translation(vec3(4, 3, 0)));
-
-	Renderable2D sprite(maths::vec3(0, 0, 0), maths::vec2(16, 9), maths::vec4(1, 0, 1, 1), shader);
+	StaticSprite sprite(0, 0, 16, 9, maths::vec4(1, 0, 1, 1), shader);
 	Simple2DRenderer renderer;
-
+#endif
+#if 0
 	shader.setUniform2f("light_pos", vec2(8.0f, 4.5f));
 	shader.setUniform4f("colour", vec4(1.0f, 0.3f, 0.8f, 1.0f));
-
+#endif
 	while (!window.closed()) {
 		window.clear();
 		double x, y;
@@ -82,7 +77,14 @@ int main() {
 		vao.unbind();
 
 #endif
+#if BATCH_RENDERER
+		renderer.begin();
+#endif
 		renderer.submit(&sprite);
+		renderer.submit(&sprite2);
+#if BATCH_RENDERER
+		renderer.end();
+#endif
 		renderer.flush();
 		window.update();
 	}
