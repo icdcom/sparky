@@ -79,6 +79,7 @@ namespace sparky {
 			glfwSetKeyCallback(m_Window, key_callback);
 			glfwSetMouseButtonCallback(m_Window, mouseButton_callback);
 			glfwSetCursorPosCallback(m_Window, cursor_postion_callback);
+			glfwSwapInterval(0.0);
 			
 			if (glewInit() != GLEW_OK) {
 				std::cout << "Could not initialize GLEW!" << std::endl;

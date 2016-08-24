@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include "renderer2d.h"
 #include "buffers/indexbuffer.h"
 
@@ -23,9 +24,9 @@ namespace sparky {
 		public:
 			BatchRenderer2D();
 			~BatchRenderer2D();
-			void begin();
+			void begin() override;
 			void submit(const Renderable2D* renderable) override;
-			void end();
+			void end() override;
 			void flush() override;
 
 		private:
