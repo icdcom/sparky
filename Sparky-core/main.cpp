@@ -31,7 +31,7 @@ int main() {
 	glClearColor(0, 0, 0, 1.0f);
 
 	Shader* shader = new Shader("src/shaders/basic.vert", "src/shaders/basic.frag");
-	shader->enable();
+	//shader->enable();
 
 	std::vector<Renderable2D*> sprites;
 	TileLayer layer(&(*shader));
@@ -46,6 +46,7 @@ int main() {
 	Timer time;
 	float timer = 0;
 	unsigned int frames = 0;
+	
 	while (!window.closed()) {
 		window.clear();		
 		double x, y;
@@ -61,6 +62,6 @@ int main() {
 		}
 	}
 
-	shader->disable();
+	//shader->disable();
 	return 0;
 }
